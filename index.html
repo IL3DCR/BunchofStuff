@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bunch of Stuff — Box Modeling Toolkit for Blender</title>
+<meta name="description" content="Practical box modeling brushes, a floating 3D reference viewer, Artline in the full viewport and Edit Mode, plus workflow utilities for Blender.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#232a6e;--bg2:#2e3589;--mute:#b7bbe6;--acc:#c95b3c;--mauve:#5a3a5e;--line:rgba(255,255,255,.14);--mx:50%;--my:30%;color-scheme:dark}
+*{box-sizing:border-box;margin:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:#fff;font:400 17px/1.65 Inter,"Segoe UI",sans-serif;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(520px circle at var(--mx) var(--my),rgba(201,91,60,.2),transparent 70%)}
+h1,h2,h3,.mono{font-family:"JetBrains Mono",monospace;letter-spacing:-.02em}
+b{font-weight:600}
+header,main,section,footer{position:relative;z-index:1}
+.wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+.top{display:flex;justify-content:space-between;align-items:center;padding:16px 24px;max-width:1080px;margin:0 auto}
+.top img{height:38px;display:block}
+.lang button{background:none;border:1px solid var(--line);color:var(--mute);font:500 13px "JetBrains Mono";padding:6px 12px;cursor:pointer}
+.lang button.on{background:var(--acc);border-color:var(--acc);color:#fff}
+.lang button:first-child{border-radius:8px 0 0 8px}.lang button:last-child{border-radius:0 8px 8px 0}
+.ticker{background:var(--acc);overflow:hidden;white-space:nowrap;font:700 13px "JetBrains Mono";padding:9px 0}
+.ticker div{display:inline-block;animation:tick 40s linear infinite}
+@keyframes tick{to{transform:translateX(-50%)}}
+.hero{padding:70px 0 40px;text-align:center}
+.eyebrow{font:500 14px "JetBrains Mono";letter-spacing:.25em;text-transform:uppercase;color:var(--mute)}
+.hero .logo{display:block;width:min(640px,92%);height:auto;margin:6px auto}
+.sr{position:absolute;left:-9999px}
+.hero p{max-width:660px;margin:14px auto 30px;color:var(--mute);font-size:19px}
+.btn{display:inline-block;font:700 15px "JetBrains Mono";text-decoration:none;padding:16px 30px;border-radius:10px;background:var(--acc);color:#fff;border:2px solid var(--acc);transition:transform .15s ease-out,box-shadow .2s;will-change:transform}
+.btn:hover{box-shadow:0 10px 30px rgba(201,91,60,.45)}
+.shot{margin:56px auto 0;max-width:980px}
+.scr{will-change:transform,opacity}
+.card{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#161b4d;transition:transform .15s ease-out;box-shadow:0 30px 60px rgba(0,0,0,.35)}
+.card img{display:block;width:100%;height:auto}
+.intro{max-width:760px;margin:0 auto;padding:40px 24px 70px;text-align:center;color:var(--mute);font-size:18px}
+.feat{padding:80px 0;border-top:1px solid var(--line)}
+.grid{display:grid;grid-template-columns:1fr 1.25fr;gap:48px;align-items:center}
+.flip .grid{grid-template-columns:1.25fr 1fr}.flip .txt{order:2}
+.num{font:700 14px "JetBrains Mono";color:var(--acc)}
+.feat h2,.band h2,.once h2{font-size:clamp(26px,4vw,40px);line-height:1.12;margin:10px 0 16px}
+h3{font-size:16px;color:var(--acc);margin:22px 0 4px}
+.feat p,.band p{color:var(--mute)}
+.note{font-size:14px;border-left:3px solid var(--acc);padding-left:12px;margin-top:16px;font-style:italic}
+ul.ls{list-style:none;padding:0;margin-top:14px}
+ul.ls li{position:relative;padding:5px 0 5px 22px;font-size:15.5px;color:#e4e6fb;transition:transform .2s}
+ul.ls li:before{content:"";position:absolute;left:2px;top:15px;width:8px;height:8px;background:var(--acc);border-radius:2px;transition:transform .2s}
+ul.ls li:hover{transform:translateX(5px)}ul.ls li:hover:before{transform:rotate(45deg) scale(1.2)}
+.band{background:var(--bg2);padding:80px 0}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px;margin-top:30px}
+.cols .card{padding:26px 28px;transform:none!important}
+.once{padding:90px 0;text-align:center}
+.once .wrap{max-width:760px}
+.once p{color:var(--mute);margin:12px 0}
+.tag{display:inline-block;font:700 13px "JetBrains Mono";letter-spacing:.14em;border:1px solid var(--acc);color:var(--acc);padding:6px 14px;border-radius:99px;margin-bottom:12px}
+.gift{margin-top:40px;border:2px solid var(--acc);border-radius:18px;padding:34px 28px;background:linear-gradient(160deg,var(--mauve),#1b2058)}
+.code{margin:18px 0 8px;border:2px dashed var(--acc);border-radius:10px;padding:12px 28px;font:700 22px "JetBrains Mono";cursor:pointer;background:none;color:#fff;transition:.2s}
+.code:hover{background:var(--acc)}
+.sig{font:700 15px "JetBrains Mono";margin-top:44px;color:var(--acc)}
+footer{border-top:1px solid var(--line);padding:36px 24px;text-align:center;color:var(--mute);font-size:14px}
+footer a{margin:0 10px}
+.rv{opacity:0;transform:translateY(36px);transition:opacity .8s ease,transform .8s ease}
+.rv.in{opacity:1;transform:none}
+@media(max-width:800px){.grid,.flip .grid{grid-template-columns:1fr}.flip .txt{order:0}}
+@media(prefers-reduced-motion:reduce){.rv{opacity:1;transform:none}.ticker div{animation:none}html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<header class="top">
+  <img src="assets/logo.png" alt="Bunch of Stuff" width="76" height="38">
+  <div class="lang"><button class="on" data-l="en">EN</button><button data-l="es">ES</button></div>
+</header>
+<div class="ticker"><div id="tk"></div></div>
+
+<main>
+<section class="hero wrap">
+  <div class="eyebrow rv" data-es="Modela. Referencia. Crea.">Model. Reference. Create.</div>
+  <h1 class="sr">Bunch of Stuff — Box Modeling Toolkit</h1>
+  <img class="logo rv" src="assets/logo.png" alt="Bunch of Stuff" width="1185" height="598">
+  <div class="eyebrow rv" data-es="Kit de Box Modeling">Box Modeling Toolkit</div>
+  <p class="rv" data-es="Una colección de herramientas prácticas de modelado, referencia y flujo de trabajo para que el día a día en Blender sea más rápido y cómodo.">A collection of practical modeling, reference and workflow tools designed to make everyday work in Blender faster and more convenient.</p>
+  <a class="btn rv" href="#features" data-es="Ver funciones">Explore features</a>
+  <div class="shot scr"><div class="card tilt"><img src="assets/grab.gif" alt="Grab brush in Edit Mode" width="1200" height="600"></div></div>
+</section>
+
+<p class="intro rv" data-es="Bunch of Stuff reúne un conjunto de herramientas enfocadas en un solo paquete: te ayuda a modelar, refinar formas, trabajar con referencias 3D y manejar tu viewport sin cambiar constantemente entre distintas herramientas.">Bunch of Stuff brings together a set of focused tools in one package, helping you model, refine shapes, work with 3D references and manage your viewport workflow without constantly switching between different tools.</p>
+
+<section class="feat" id="features"><div class="wrap grid">
+  <div class="txt rv"><div class="num">01 — Scene Tools</div>
+  <h2 data-es="Herramientas de escena">Scene Tools</h2>
+  <p data-es="Prepara tu escena de trabajo y mantén referencias 3D externas visibles mientras trabajas.">Set up your working scene and keep external 3D references visible while you work.</p>
+  <ul class="ls">
+    <li data-es="Herramientas dedicadas de configuración de escena para el flujo de Artline.">Dedicated scene setup tools for the Artline workflow.</li>
+    <li data-es="Creación y gestión de Model Camera.">Model Camera creation and management.</li>
+    <li data-es="Opciones para configurar la escena para visualizar Artline en todo el viewport.">Options to configure the scene for full-viewport Artline visualization.</li>
+  </ul></div>
+  <div class="scr"><div class="card tilt"><img loading="lazy" src="assets/scene-setup.gif" alt="Scene Tools panel" width="1200" height="600"></div></div>
+</div></section>
+
+<section class="feat flip"><div class="wrap grid">
+  <div class="txt rv"><div class="num">01 — 3D Reference Viewer</div>
+  <h2 data-es="Visor de referencias 3D">3D Reference Viewer</h2>
+  <ul class="ls">
+    <li data-es="Carga modelos 3D externos como referencias en el viewport.">Load external 3D models as viewport references.</li>
+    <li data-es="Compatible con archivos OBJ y FBX binario.">Supports OBJ and binary FBX files.</li>
+    <li data-es="Muestra hasta dos objetos de referencia al mismo tiempo.">Display up to two reference objects at the same time.</li>
+    <li data-es="Visor flotante independiente que no importa ni modifica tu escena de Blender.">Independent floating viewer that does not import or modify your Blender scene.</li>
+    <li data-es="Controles dedicados de navegación y visualización.">Dedicated navigation and display controls.</li>
+  </ul>
+  <p style="margin-top:16px" data-es="El Reference Viewer está pensado para consultar y comparar rápidamente, manteniendo tu escena de trabajo separada de tus objetos de referencia.">The Reference Viewer is designed for quick visual reference and comparison, keeping your working scene separate from your reference objects.</p>
+  <p class="note" data-es="Nota: no se admiten materiales ni texturas. El visor está pensado para referencia ligera de geometría.">Note: Materials and textures are not supported. The viewer is designed for lightweight geometry reference.</p></div>
+  <div class="scr"><div class="card tilt"><img loading="lazy" src="assets/reference-viewer.gif" alt="3D Reference Viewer" width="1200" height="600"></div></div>
+</div></section>
+
+<section class="band"><div class="wrap">
+  <div class="num rv">02 — Artline Tools</div>
+  <h2 class="rv" data-es="Artline, más allá de la cámara">Take your Artline workflow beyond the standard camera-based approach.</h2>
+  <p class="rv" data-es="El Line Art estándar de Blender depende de la cámara y no ofrece vista previa en vivo en Edit Mode. Bunch of Stuff amplía este flujo: trabaja con Artline directamente en todo el viewport y previsualiza los contornos mientras editas tu malla.">Blender's standard Line Art workflow is camera-dependent and does not provide a live Edit Mode preview. Bunch of Stuff expands this workflow, allowing you to work with Artline directly in the full viewport and preview outlines while editing your mesh.</p>
+  <ul class="ls rv">
+    <li data-es="Visualización de Artline en todo el viewport, no solo en la vista de cámara.">Artline visualization throughout the full viewport, not just the camera view.</li>
+    <li data-es="Vista previa de contornos en vivo en Edit Mode.">Live outline preview in Edit Mode.</li>
+    <li data-es="Ajustes dedicados de Artline.">Dedicated Artline settings.</li>
+    <li data-es="Controles de visibilidad en el viewport.">Viewport visibility controls.</li>
+    <li data-es="Controles de Edge y Face Mark para gestionar la visibilidad de Artline.">Edge and Face Mark controls for managing Artline visibility.</li>
+    <li data-es="Contornos basados en proxies para mostrar line art mientras editas la geometría.">Proxy-based outlines for displaying line art while editing mesh geometry.</li>
+    <li data-es="Opciones para controlar qué objetos y modificadores participan en el flujo de contorno en Edit Mode.">Options to control which objects and modifiers participate in the Edit-Mode Outline workflow.</li>
+  </ul>
+  <p class="rv" style="margin-top:18px;color:#fff" data-es="Ve tus contornos mientras trabajas, sin tener que volver a la vista de cámara.">See your outlines while you work, without constantly switching to the camera view.</p>
+</div></section>
+
+<section class="feat"><div class="wrap grid">
+  <div class="txt rv"><div class="num">03 — Materials</div>
+  <h2 data-es="Materiales">Materials</h2>
+  <p data-es="Controles prácticos para ajustes comunes de materiales y entorno.">Convenient controls for common material and environment adjustments.</p>
+  <ul class="ls">
+    <li data-es="Panel dedicado de Material Slots.">Dedicated Material Slots panel.</li>
+    <li data-es="Agrega, quita y crea materiales.">Add, remove and create materials.</li>
+    <li data-es="Asigna materiales a la geometría seleccionada.">Assign materials to selected geometry.</li>
+    <li data-es="Controles de Viewport Color.">Viewport Color controls.</li>
+    <li data-es="Ajustes de color del shader de superficie.">Surface shader color settings.</li>
+    <li data-es="Ajustes de World y controles de fondo.">World settings and background controls.</li>
+  </ul></div>
+  <div class="scr"><div class="card tilt"><img loading="lazy" src="assets/materials.gif" alt="Materials panel" width="1200" height="600"></div></div>
+</div></section>
+
+<section class="feat flip"><div class="wrap grid">
+  <div class="txt rv"><div class="num">04 — Modeling Tools · Draw Ngon</div>
+  <h2 data-es="Herramientas de modelado">Modeling Tools</h2>
+  <p data-es="Herramientas prácticas para crear y refinar geometría directamente en el 3D Viewport.">A set of practical tools for creating and refining mesh geometry directly in the 3D Viewport.</p>
+  <h3>Draw Ngon</h3>
+  <ul class="ls">
+    <li data-es="Crea caras poligonales colocando puntos directamente en el viewport.">Create polygon faces by placing points directly in the viewport.</li>
+    <li data-es="Construye formas a medida con un flujo simple punto por punto.">Build custom shapes with a simple point-by-point workflow.</li>
+    <li data-es="Cierra la forma para generar la cara.">Close the shape to generate the face.</li>
+  </ul></div>
+  <div class="scr"><div class="card tilt"><img loading="lazy" src="assets/ngon.gif" alt="Draw Ngon" width="1200" height="600"></div></div>
+</div></section>
+
+<section class="feat"><div class="wrap grid">
+  <div class="txt rv"><div class="num">04 — Modeling Tools · Grab Brush</div>
+  <h3 style="margin-top:8px;font-size:26px">Grab Brush</h3>
+  <ul class="ls">
+    <li data-es="Ajusta rápidamente las formas de la malla arrastrando la geometría.">Quickly adjust mesh shapes by dragging geometry.</li>
+    <li data-es="Edición con pincel directamente en el viewport.">Brush-based editing directly in the viewport.</li>
+    <li data-es="Incluye opciones de radio, fuerza y simetría.">Includes options for radius, strength and symmetry.</li>
+  </ul></div>
+  <div class="scr"><div class="card tilt"><img loading="lazy" src="assets/grab.gif" alt="Grab Brush" width="1200" height="600"></div></div>
+</div></section>
+
+<section class="feat flip"><div class="wrap grid">
+  <div class="txt rv"><div class="num">04 — Modeling Tools · Smooth Brush</div>
+  <h3 style="margin-top:8px;font-size:26px">Smooth Brush</h3>
+  <ul class="ls">
+    <li data-es="Refina superficies irregulares con un pincel de suavizado dedicado.">Refine uneven surfaces with a dedicated smoothing brush.</li>
+    <li data-es="Ajusta el radio y la fuerza del pincel para controlar el efecto.">Adjust brush radius and strength to control the effect.</li>
+  </ul></div>
+  <div class="scr"><div class="card tilt"><img loading="lazy" src="assets/smooth.gif" alt="Smooth Brush" width="1200" height="600"></div></div>
+</div></section>
+
+<section class="feat"><div class="wrap grid">
+  <div class="txt rv"><div class="num">04 — Modeling Tools · Relax</div>
+  <h3 style="margin-top:8px;font-size:26px">Relax Slide</h3>
+  <ul class="ls">
+    <li data-es="Relaja la topología de la malla conservando la superficie.">Relax mesh topology while preserving the surface.</li>
+    <li data-es="Útil para ajustar la distribución de vértices y refinar el flujo de aristas.">Useful for adjusting vertex distribution and refining edge flow.</li>
+  </ul>
+  <h3 style="font-size:26px;margin-top:26px">Relax Pinch</h3>
+  <ul class="ls">
+    <li data-es="Relaja y aprieta la geometría con un efecto adicional de pinch.">Relax and tighten geometry with an additional pinching effect.</li>
+    <li data-es="Útil para refinar edge loops y la estructura local de la malla.">Useful for refining edge loops and local mesh structure.</li>
+  </ul></div>
+  <div class="scr"><div class="card tilt"><img loading="lazy" src="assets/relax.gif" alt="Relax Slide and Relax Pinch" width="1200" height="600"></div></div>
+</div></section>
+
+<section class="band"><div class="wrap">
+  <div class="num rv">05 — Debug &amp; Support</div>
+  <h2 class="rv" data-es="Depuración y soporte">Debug &amp; Support</h2>
+  <p class="rv" data-es="Bunch of Stuff incluye un sistema de reportes de depuración para ayudar a resolver problemas. Si encuentras uno, activa el panel Debug y copia un reporte con información relevante del addon, de Blender, del sistema y de la escena, junto con los logs recientes del addon. Así es más fácil dar la información útil al pedir soporte.">Bunch of Stuff includes a built-in debug report system to help troubleshoot issues. If you encounter a problem, you can enable the Debug panel and copy a report containing relevant addon, Blender, system and scene information, along with recent addon logs. This makes it easier to provide useful information when requesting support.</p>
+  <div class="cols">
+    <div class="card rv"><h3 style="margin-top:0">Requirements</h3>
+      <ul class="ls"><li data-es="Blender 5.1.0 o superior.">Blender 5.1.0 or newer.</li><li data-es="Probado con Blender 5.1 y Blender 5.3.">Tested with Blender 5.1 and Blender 5.3.</li></ul></div>
+    <div class="card rv"><h3 style="margin-top:0">Product Information</h3>
+      <ul class="ls"><li><b data-es="Producto:">Product:</b> Bunch of Stuff — Box Modeling Toolkit</li><li><b data-es="Versión:">Version:</b> 1.0.0</li><li><b data-es="Categoría:">Category:</b> Modeling / Workflow Tools</li><li><b data-es="Licencia:">License:</b> <span data-es="Compra única.">One-time purchase.</span></li></ul></div>
+  </div>
+</div></section>
+
+<section class="once"><div class="wrap">
+  <span class="tag rv" data-es="COMPRA ÚNICA · ACTUALIZACIONES INCLUIDAS">ONE-TIME PURCHASE · UPDATES INCLUDED</span>
+  <h2 class="rv" data-es="Compra única. Actualizaciones incluidas.">One-time purchase. Updates included.</h2>
+  <p class="rv" data-es="Bunch of Stuff es de compra única. Todas las futuras actualizaciones del producto están incluidas sin costo adicional.">Bunch of Stuff is a one-time purchase. All future product updates are included at no additional cost.</p>
+  <p class="rv" data-es="Creo en la forma en que tradicionalmente ha funcionado la comunidad de Blender: cuando compras un addon, debes seguir recibiendo sus mejoras y actualizaciones sin pagar de nuevo por el mismo producto.">I believe in the way the Blender community has traditionally worked: when you purchase an addon, you should continue receiving its improvements and updates without having to pay again for the same product.</p>
+  <p class="rv"><b data-es="Sin suscripciones. Sin cargos por upgrades. Solo una compra.">No subscriptions. No paid upgrade fees. Just one purchase.</b></p>
+  <div class="gift rv">
+    <div class="eyebrow" data-es="Un pequeño detalle para ti">A little something for you</div>
+    <p style="margin-top:10px" data-es="Si llegaste hasta aquí, ¡tengo un regalo de bienvenida! Usa el código de descuento introductorio para obtener 10% de descuento en tu compra.">If you've made it this far, here's a little welcome gift! Use the introductory discount code below to get <b>10% OFF</b> your purchase.</p>
+    <button class="code" id="cp" title="Copy">ILUV3D</button>
+    <p style="font-size:14px"><span data-es="Código de descuento:">Discount code:</span> iluv3d</p>
+  </div>
+  <p class="sig rv" data-es="¡Gracias por apoyar el desarrollo independiente de Blender!">Thanks for supporting independent Blender development!</p>
+  <p class="rv" style="margin-top:18px;font-weight:600;color:#fff" data-es="Un paquete. Un montón de herramientas útiles.">One package. A bunch of useful tools.</p>
+</div></section>
+</main>
+
+<footer>
+  <a href="https://superhivemarket.com/products/bunch-of-stuff/docs" target="_blank" rel="noopener" data-es="Documentación">Documentation</a>
+  <a href="https://superhivemarket.com/products/bunch-of-stuff/faq" target="_blank" rel="noopener">FAQ</a>
+  <a href="https://superhivemarket.com/creators/i-love-3d" target="_blank" rel="noopener">I love 3d</a>
+</footer>
+
+<script>
+const $=(s,c=document)=>[...c.querySelectorAll(s)];
+// language
+const tx=$('[data-es]');tx.forEach(e=>e.dataset.en=e.innerHTML);
+const tk={en:'NOW LIVE ✦ 10% OFF · CODE ILUV3D ✦ SCULPT-LIKE BRUSHES IN EDIT MODE ✦ 3D MODEL SYNC · MULTI-REFERENCE ✦ ARTLINE — FULL VIEWPORT & EDIT MODE ✦ ',es:'YA DISPONIBLE ✦ 10% OFF · CÓDIGO ILUV3D ✦ PINCELES TIPO SCULPT EN EDIT MODE ✦ SINCRONIZA MODELOS 3D · MULTI-REFERENCIA ✦ ARTLINE — VIEWPORT COMPLETO Y EDIT MODE ✦ '};
+function setLang(l){document.documentElement.lang=l;tx.forEach(e=>e.innerHTML=e.dataset[l]);
+$('#tk')[0].textContent=tk[l].repeat(8);$('.lang button').forEach(b=>b.classList.toggle('on',b.dataset.l===l));
+try{localStorage.setItem('l',l)}catch(e){}}
+$('.lang button').forEach(b=>b.onclick=()=>setLang(b.dataset.l));
+let sl='en';try{sl=localStorage.getItem('l')||((navigator.language||'').slice(0,2)==='es'?'es':'en')}catch(e){}
+setLang(sl);
+// reveal text on scroll
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.12});
+$('.rv').forEach((e,i)=>{e.style.transitionDelay=(i%3)*.08+'s';io.observe(e)});
+// screens: settle into place as they scroll into view
+const S=$('.scr'),rm=matchMedia('(prefers-reduced-motion:reduce)').matches;let tick=0;
+function sc(){tick=0;const h=innerHeight;S.forEach(e=>{const t=e.getBoundingClientRect().top;
+let p=Math.min(1,Math.max(0,(h-t)/(h*.7)));p=1-Math.pow(1-p,3);
+e.style.transform=`perspective(1300px) translateY(${(1-p)*56}px) rotateX(${(1-p)*14}deg) scale(${.9+.1*p})`;
+e.style.opacity=.1+.9*Math.min(1,p*1.4)})}
+if(!rm){const q=()=>tick||(tick=requestAnimationFrame(sc));addEventListener('scroll',q,{passive:true});addEventListener('resize',q);addEventListener('load',sc);sc()}
+// cursor glow, magnetic buttons, tilt
+addEventListener('pointermove',e=>{const s=document.body.style;s.setProperty('--mx',e.clientX+'px');s.setProperty('--my',e.clientY+'px');
+$('.btn').forEach(b=>{const r=b.getBoundingClientRect(),dx=e.clientX-(r.left+r.width/2),dy=e.clientY-(r.top+r.height/2);
+b.style.transform=Math.hypot(dx,dy)<140?`translate(${dx*.25}px,${dy*.35}px)`:''})});
+$('.tilt').forEach(c=>{c.onpointermove=e=>{const r=c.getBoundingClientRect(),x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;
+c.style.transform=`rotateY(${x*8}deg) rotateX(${-y*8}deg)`};c.onpointerleave=()=>c.style.transform=''});
+// copy code
+$('#cp')[0].onclick=function(){try{navigator.clipboard.writeText('ILUV3D')}catch(e){}
+this.textContent=document.documentElement.lang==='es'?'¡COPIADO!':'COPIED!';setTimeout(()=>this.textContent='ILUV3D',1400)};
+</script>
+</body>
+</html>
