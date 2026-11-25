@@ -246,12 +246,12 @@ setLang(sl);
 const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.12});
 $('.rv').forEach((e,i)=>{e.style.transitionDelay=(i%3)*.08+'s';io.observe(e)});
 // screens: settle into place as they scroll into view
-const S=$('.scr'),rm=matchMedia('(prefers-reduced-motion:reduce)').matches;let tick=0;
-function sc(){tick=0;const h=innerHeight;S.forEach(e=>{const t=e.getBoundingClientRect().top;
-let p=Math.min(1,Math.max(0,(h-t)/(h*.7)));p=1-Math.pow(1-p,3);
+const S=$('.scr'),rm=matchMedia('(prefers-reduced-motion:reduce)').matches;
+// uses IntersectionObserver so it also works inside a tall iframe (e.g. Superhive)
+if(!rm){const so=new IntersectionObserver(es=>es.forEach(n=>{const e=n.target;
+let p=1-Math.pow(1-Math.min(1,n.intersectionRatio/.6),3);p=e._p=Math.max(e._p||0,p);
 e.style.transform=`perspective(1300px) translateY(${(1-p)*56}px) rotateX(${(1-p)*14}deg) scale(${.9+.1*p})`;
-e.style.opacity=.1+.9*Math.min(1,p*1.4)})}
-if(!rm){const q=()=>tick||(tick=requestAnimationFrame(sc));addEventListener('scroll',q,{passive:true});addEventListener('resize',q);addEventListener('load',sc);sc()}
+e.style.opacity=.1+.9*Math.min(1,p*1.4)}),{threshold:Array.from({length:41},(_,i)=>i/40)});S.forEach(e=>so.observe(e))}
 // cursor glow, magnetic buttons, tilt
 addEventListener('pointermove',e=>{const s=document.body.style;s.setProperty('--mx',e.clientX+'px');s.setProperty('--my',e.clientY+'px');
 $('.btn').forEach(b=>{const r=b.getBoundingClientRect(),dx=e.clientX-(r.left+r.width/2),dy=e.clientY-(r.top+r.height/2);
@@ -264,4 +264,3 @@ this.textContent=document.documentElement.lang==='es'?'¡COPIADO!':'COPIED!';set
 </script>
 </body>
 </html>
-
